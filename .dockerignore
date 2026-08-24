@@ -1,0 +1,25 @@
+.git
+.github
+
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+.pytest_cache/
+
+.env
+.env.*
+
+.venv/
+venv/
+
+outputs/
+runs/
+
+# Keep sample data in GitHub,
+# but don't put NetCDF data into the Docker image.
+test-data/
+*.nc
+
+.DS_Store
