@@ -4,21 +4,13 @@ import sys
 from fastapi.testclient import TestClient
 
 
-# Add the repository root to Python's import path so tests can find api.py
-# whether they are run with `pytest` or `python -m pytest`.
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from api import app
+import api
 
 
-client = TestClient(app)
-
-TEST_GRANULE = (
-    ROOT
-    / "test-data"
-    / "SWOT_L3_LR_SSH_Expert_001_161_20230726T224518_20230726T233644_v3.0.nc"
-)
+client = TestClient(api.app)
 
 
 def test_health():
@@ -31,6 +23,7 @@ def test_health():
     assert data["status"] == "ok"
     assert data["service"] == "swot-internal-wave-yolo"
     assert data["model"] == "last.pt"
+    assert data["filter_type"] == "rolling"
 
 
 def test_predict_missing_granule():
@@ -38,34 +31,93 @@ def test_predict_missing_granule():
         "/predict",
         json={
             "granule": "/does/not/exist.nc",
-            "confidence": 0.25,
-            "filter_type": "normal",
+            "confidence": 0.4,
         },
     )
 
     assert response.status_code == 404
 
 
-def test_predict_invalid_filter():
-    response = client.post(
-        "/predict",
-        json={
-            "granule": str(TEST_GRANULE),
-            "confidence": 0.25,
-            "filter_type": "not-a-filter",
-        },
+def test_predict_response_contract(
+    tmp_path,
+    monkeypatch,
+):
+    # The API checks that the source file exists.
+    fake_granule = tmp_path / "test.nc"
+    fake_granule.touch()
+
+    def fake_run_johnny_on_one_record(
+        detector,
+        record,
+        output_dir,
+        confidence_threshold,
+    ):
+        return {
+            "item_id": record["item_id"],
+            "cycle": record["cycle"],
+            "pass": record["pass"],
+            "mask_netcdf": str(
+                output_dir / "fake_mask.nc"
+            ),
+            "detection_count": 1,
+            "filter_type": "rolling",
+        }
+
+    def fake_mask_netcdf_to_features(record):
+        return [
+            {
+                "type": "Feature",
+                "properties": {
+                    "model_id": "johnny_iw",
+                    "confidence_value": 0.91,
+                    "mask_netcdf": record[
+                        "mask_netcdf"
+                    ],
+                },
+                "geometry": {
+                    "type": "Polygon",
+                    "coordinates": [
+                        [
+                            [90.0, 10.0],
+                            [91.0, 10.0],
+                            [91.0, 11.0],
+                            [90.0, 11.0],
+                            [90.0, 10.0],
+                        ]
+                    ],
+                },
+            }
+        ]
+
+    monkeypatch.setattr(
+        api,
+        "run_johnny_on_one_record",
+        fake_run_johnny_on_one_record,
     )
 
-    assert response.status_code == 400
+    monkeypatch.setattr(
+        api,
+        "mask_netcdf_to_features",
+        fake_mask_netcdf_to_features,
+    )
 
-
-def test_predict():
     response = client.post(
         "/predict",
         json={
-            "granule": str(TEST_GRANULE),
-            "confidence": 0.25,
-            "filter_type": "normal",
+            "granule": str(fake_granule),
+            "confidence": 0.4,
+            "source": {
+                "collection":
+                    "bay_of_bengal_swot_ssha",
+
+                "item_id":
+                    "bay_of_bengal_swot_cycle_050_pass_230",
+
+                "cycle": "050",
+                "pass": "230",
+                "direction": "descending",
+                "datetime": "2024-01-01T00:00:00Z",
+            },
         },
     )
 
@@ -74,12 +126,46 @@ def test_predict():
     data = response.json()
 
     assert data["status"] == "ok"
+    assert data["model_id"] == "johnny_iw"
     assert data["model"] == "last.pt"
-    assert data["filter_type"] == "normal"
-    assert data["confidence_threshold"] == 0.25
 
-    assert isinstance(data["detection_count"], int)
-    assert isinstance(data["processing_seconds"], (int, float))
-    assert isinstance(data["detections"], list)
+    # Johnny's preprocessing stays fixed.
+    assert data["filter_type"] == "rolling"
 
-    assert "summary" in data
+    assert data["confidence_threshold"] == 0.4
+
+    assert data["detection_count"] == 1
+
+    assert isinstance(
+        data["processing_seconds"],
+        (int, float),
+    )
+
+    assert data["source"]["cycle"] == "050"
+    assert data["source"]["pass"] == "230"
+
+    geojson = data["geojson"]
+
+    assert geojson["type"] == "FeatureCollection"
+    assert len(geojson["features"]) == 1
+
+    properties = (
+        geojson["features"][0]["properties"]
+    )
+
+    assert properties[
+        "source_collection"
+    ] == "bay_of_bengal_swot_ssha"
+
+    assert properties[
+        "source_item_id"
+    ] == (
+        "bay_of_bengal_swot_cycle_050_pass_230"
+    )
+
+    assert properties["cycle"] == "050"
+    assert properties["pass"] == "230"
+    assert properties["direction"] == "descending"
+
+    # Temporary mask paths must NOT escape the API.
+    assert "mask_netcdf" not in properties

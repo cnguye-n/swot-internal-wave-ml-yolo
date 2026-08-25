@@ -38,23 +38,15 @@ import xarray as xr
 # File locations
 # ------------------------------------------------------------
 
-PLUGIN_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = Path(__file__).resolve().parents[1]
 
-JOHNNY_MODEL_DIR = PLUGIN_ROOT / "models" / "johnny_iw"
-
-sys.path.insert(0, str(JOHNNY_MODEL_DIR))
+sys.path.insert(0, str(REPO_ROOT))
 
 from swot_internal_wave_detector import SWOTInternalWaveDetector
 
-
-DEFAULT_INPUT_JSON = (
-    PLUGIN_ROOT / "pipeline" / "model_outputs" / "selected_items_test.json"
-)
-
-DEFAULT_OUTPUT_DIR = PLUGIN_ROOT / "pipeline" / "model_outputs"
-
-DEFAULT_MODEL_PATH = JOHNNY_MODEL_DIR / "last.pt"
-
+DEFAULT_INPUT_JSON = ( REPO_ROOT / "pipeline" / "model_outputs" / "selected_items_test.json")
+DEFAULT_OUTPUT_DIR = ( REPO_ROOT / "pipeline" / "model_outputs")
+DEFAULT_MODEL_PATH = REPO_ROOT / "last.pt"
 
 # ------------------------------------------------------------
 # Johnny's model settings
