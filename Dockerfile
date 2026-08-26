@@ -46,11 +46,15 @@ ENV MPLBACKEND=Agg
 # MODEL + API
 # ------------------------------------------------------------
 
-COPY --chown=$MAMBA_USER:$MAMBA_USER \
+    COPY --chown=$MAMBA_USER:$MAMBA_USER \
     swot_internal_wave_detector.py \
     api.py \
     last.pt \
     /app/
+
+COPY --chown=$MAMBA_USER:$MAMBA_USER \
+    pipeline \
+    /app/pipeline
 
 
 # ------------------------------------------------------------
