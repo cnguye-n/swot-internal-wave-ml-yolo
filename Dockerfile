@@ -46,9 +46,10 @@ ENV MPLBACKEND=Agg
 # MODEL + API
 # ------------------------------------------------------------
 
-    COPY --chown=$MAMBA_USER:$MAMBA_USER \
+COPY --chown=$MAMBA_USER:$MAMBA_USER \
     swot_internal_wave_detector.py \
     api.py \
+    model_ui_for_mmgis.json \
     last.pt \
     /app/
 
