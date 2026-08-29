@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-step_02_run_johnny_iw.py
+step_02_run_iw.py
 
 Purpose:
-    Run Johnny's internal-wave detector on selected SWOT NetCDF files.
+    Run the internal-wave YOLO detector on selected SWOT NetCDF files.
 
 This version saves:
     1. A combined mask:
@@ -49,16 +49,16 @@ DEFAULT_OUTPUT_DIR = ( REPO_ROOT / "pipeline" / "model_outputs")
 DEFAULT_MODEL_PATH = REPO_ROOT / "last.pt"
 
 # ------------------------------------------------------------
-# Johnny's model settings
+# Internal-wave YOLO model settings
 # ------------------------------------------------------------
 
-JOHNNY_LAT_MIN = 3.0
-JOHNNY_LAT_MAX = 15.5
-JOHNNY_FILTER_TYPE = "rolling"
-JOHNNY_CMAP = "magma"
+IW_YOLO_LAT_MIN = 3.0
+IW_YOLO_LAT_MAX = 15.5
+IW_YOLO_FILTER_TYPE = "rolling"
+IW_YOLO_CMAP = "magma"
 
 # This is the YOLO detection threshold, not the per-box confidence.
-DEFAULT_JOHNNY_CONFIDENCE_THRESHOLD = 0.4
+DEFAULT_IW_YOLO_CONFIDENCE_THRESHOLD = 0.4
 
 # Combined binary mask.
 MASK_VARIABLE_NAME = "internal_wave_bbox_mask"
@@ -87,7 +87,7 @@ def make_output_prefix(record: dict, confidence_threshold: float) -> str:
     Create a clean output filename prefix.
 
     Example:
-        johnny_iw_cycle_050_pass_008
+        iw_yolo_cycle_050_pass_008_thr_040
     """
     cycle = record.get("cycle", "unknown")
     pass_number = record.get("pass", "unknown")
@@ -95,7 +95,7 @@ def make_output_prefix(record: dict, confidence_threshold: float) -> str:
     threshold_token = f"{round(float(confidence_threshold) * 100):03d}"
 
     return (
-        f"johnny_iw_cycle_{cycle}_pass_{pass_number}_thr_{threshold_token}"
+        f"iw_yolo_cycle_{cycle}_pass_{pass_number}_thr_{threshold_token}"
     )
 
 
@@ -133,7 +133,7 @@ def yolo_box_to_original_mask(
     Convert one YOLO box from transformed image coordinates back to the
     original clipped SWOT pixel grid.
 
-    This mirrors Johnny's yolo_boxes_to_original_mask(), but it does it
+    This mirrors the detector's yolo_boxes_to_original_mask(), but it does it
     for one box at a time so we can keep box identity and confidence.
     """
     transformed_shape = transform_info["transformed_shape"]
@@ -339,14 +339,14 @@ def add_yolo_box_masks_to_dataset(
     return ds_with_outputs
 
 
-def run_johnny_on_one_record(
+def run_iw_yolo_on_one_record(
     detector: SWOTInternalWaveDetector,
     record: dict,
     output_dir: Path,
     confidence_threshold: float,
 ) -> dict:
     """
-    Run Johnny's detector on one NetCDF file and save:
+    Run the internal-wave YOLO detector on one NetCDF file and save:
         - combined mask
         - per-box masks
         - real YOLO confidence values
@@ -367,7 +367,7 @@ def run_johnny_on_one_record(
 
     print()
     print("=" * 80)
-    print("Running Johnny internal-wave detector")
+    print("Running internal-wave YOLO detector")
     print(f"Item:      {item_id}")
     print(f"Cycle:     {cycle}")
     print(f"Pass:      {pass_number}")
@@ -382,13 +382,13 @@ def run_johnny_on_one_record(
         # because we need transform_info to make one mask per YOLO box.
         transformed_arr, transform_info, filtered_arr = detector.transform_dataset_for_yolo(
             clipped_ds,
-            filter_type=JOHNNY_FILTER_TYPE,
+            filter_type=IW_YOLO_FILTER_TYPE,
             return_filtered=True,
         )
 
         pil_image = detector.array_to_pil_image(
             transformed_arr,
-            cmap=JOHNNY_CMAP,
+            cmap=IW_YOLO_CMAP,
         )
 
         result = detector.run_yolo_detection(
@@ -419,13 +419,13 @@ def run_johnny_on_one_record(
         # This lets the persistent result NetCDF contain both the analysis
         # input and the model masks.
         filtered_variable = detector.make_filtered_var_name(
-            JOHNNY_FILTER_TYPE
+            IW_YOLO_FILTER_TYPE
         )
 
         ds_with_outputs = detector.add_filtered_array_to_dataset(
             clipped_ds=ds_with_outputs,
             filtered_arr=filtered_arr,
-            filter_type=JOHNNY_FILTER_TYPE,
+            filter_type=IW_YOLO_FILTER_TYPE,
             filtered_var_name=filtered_variable,
         )
 
@@ -450,8 +450,8 @@ def run_johnny_on_one_record(
         ds_with_outputs.attrs["yolo_detection_threshold"] = float(
             confidence_threshold
         )
-        ds_with_outputs.attrs["yolo_filter_type"] = str(JOHNNY_FILTER_TYPE)
-        ds_with_outputs.attrs["yolo_cmap"] = str(JOHNNY_CMAP)
+        ds_with_outputs.attrs["yolo_filter_type"] = str(IW_YOLO_FILTER_TYPE)
+        ds_with_outputs.attrs["yolo_cmap"] = str(IW_YOLO_CMAP)
 
         detection_count = len(yolo_boxes)
 
@@ -507,8 +507,8 @@ def run_johnny_on_one_record(
             else None
         ),
         "yolo_boxes": yolo_boxes,
-        "filter_type": JOHNNY_FILTER_TYPE,
-        "cmap": JOHNNY_CMAP,
+        "filter_type": IW_YOLO_FILTER_TYPE,
+        "cmap": IW_YOLO_CMAP,
     }
 
 
@@ -524,7 +524,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--model",
         default=str(DEFAULT_MODEL_PATH),
-        help="Path to Johnny's YOLO .pt model.",
+        help="Path to the internal-wave YOLO .pt model.",
     )
 
     parser.add_argument(
@@ -536,7 +536,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--confidence-threshold",
         type=float,
-        default=DEFAULT_JOHNNY_CONFIDENCE_THRESHOLD,
+        default=DEFAULT_IW_YOLO_CONFIDENCE_THRESHOLD,
         help="YOLO detection threshold between 0 and 1.",
     )
 
@@ -556,7 +556,7 @@ def main() -> None:
         raise ValueError("confidence threshold must be between 0 and 1")
 
     if not model_path.exists():
-        raise FileNotFoundError(f"Johnny model not found: {model_path}")
+        raise FileNotFoundError(f"Internal-wave YOLO model not found: {model_path}")
 
     selected_records = load_selected_items(input_json)
 
@@ -570,15 +570,15 @@ def main() -> None:
     print(f"Threshold:  {args.confidence_threshold}")
 
     detector = SWOTInternalWaveDetector(
-        lat_min=JOHNNY_LAT_MIN,
-        lat_max=JOHNNY_LAT_MAX,
+        lat_min=IW_YOLO_LAT_MIN,
+        lat_max=IW_YOLO_LAT_MAX,
         model_path=model_path,
     )
 
     output_records = []
 
     for record in selected_records:
-        output_record = run_johnny_on_one_record(
+        output_record = run_iw_yolo_on_one_record(
             detector=detector,
             record=record,
             output_dir=output_dir,
@@ -587,7 +587,7 @@ def main() -> None:
 
         output_records.append(output_record)
 
-    manifest_path = output_dir / "johnny_iw_mask_outputs.json"
+    manifest_path = output_dir / "iw_yolo_mask_outputs.json"
     manifest_path.write_text(json.dumps(output_records, indent=2), encoding="utf-8")
 
     print()
