@@ -3,7 +3,8 @@
 step_04_write_outputs.py
 
 Purpose:
-    Prepare Johnny detection outputs for display.
+    Prepare detection outputs for display. OUTDATED~ --> this file only useful for persistent/latest output files for standalone runs --> FastAPI service doesn't need this 
+    to return results to MMGIS
 
 This step:
     - Reads the GeoJSON from step 03
@@ -36,7 +37,7 @@ from pathlib import Path
 PLUGIN_ROOT = Path(__file__).resolve().parents[1]
 
 DEFAULT_INPUT_GEOJSON = (
-    PLUGIN_ROOT / "pipeline" / "model_outputs" / "johnny_iw_detections.geojson"
+    PLUGIN_ROOT / "pipeline" / "model_outputs" / "iw_yolo_detections.geojson"
 )
 
 DEFAULT_OUTPUT_DIR = PLUGIN_ROOT / "pipeline" / "model_outputs"

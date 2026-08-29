@@ -52,7 +52,7 @@ def parse_args() -> argparse.Namespace:
 
     parser.add_argument(
         "--model-id",
-        default="johnny_iw",
+        default="iw_yolo",
         help="Registered model ID.",
     )
 
@@ -88,9 +88,9 @@ def parse_args() -> argparse.Namespace:
 def main() -> None:
     args = parse_args()
 
-    if args.model_id != "johnny_iw":
+    if args.model_id != "iw_yolo":
         raise ValueError(
-            f"Only johnny_iw is wired right now. Got: {args.model_id}"
+            f"Only iw_yolo is wired right now. Got: {args.model_id}"
         )
 
     if not 0 <= args.confidence_threshold <= 1:
@@ -100,7 +100,7 @@ def main() -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
 
     selected_items_json = output_dir / "selected_items.json"
-    mask_manifest_json = output_dir / "johnny_iw_mask_outputs.json"
+    mask_manifest_json = output_dir / "iw_yolo_mask_outputs.json"
     detections_geojson = output_dir / "detections.geojson"
     latest_manifest_json = output_dir / "latest_detections_manifest.json"
 
@@ -124,7 +124,7 @@ def main() -> None:
     run_command(
         [
             sys.executable,
-            str(PIPELINE_DIR / "step_02_run_johnny_iw.py"),
+            str(PIPELINE_DIR / "step_02_run_iw.py"),
             "--input-json",
             str(selected_items_json),
             "--output-dir",
