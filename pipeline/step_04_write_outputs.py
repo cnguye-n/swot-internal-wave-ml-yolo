@@ -174,7 +174,7 @@ def build_manifest(
         "geometry_methods": sorted(geometry_methods),
 
         "note": (
-            "This is the latest Johnny internal-wave detection GeoJSON. "
+            "This is the latest internal-wave detection GeoJSON. "
             "When generated with the updated step 02 and step 03 pipeline, "
             "each feature should represent one YOLO box and include both "
             "detection_threshold and confidence_value."

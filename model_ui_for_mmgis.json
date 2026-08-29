@@ -1,0 +1,32 @@
+{
+  "summary": [
+    {
+      "label": "Internal Wave Detections",
+      "field": "detection_count"
+    },
+    {
+      "label": "Processing Time",
+      "field": "processing_seconds",
+      "unit": "s"
+    }
+  ],
+
+  "feature_properties": [
+    {
+      "label": "Detection ID",
+      "field": "id"
+    },
+    {
+      "label": "Class",
+      "field": "class_name"
+    },
+    {
+      "label": "Confidence",
+      "field": "confidence_value"
+    },
+    {
+      "label": "Box",
+      "field": "box_index"
+    }
+  ]
+}

@@ -3,7 +3,7 @@
 step_03_yolo_to_geojson.py
 
 Purpose:
-    Convert Johnny's per-YOLO-box mask NetCDF outputs into GeoJSON polygons.
+    Convert internal-wave YOLO per-box mask NetCDF outputs into GeoJSON polygons.
 
 Preferred behavior:
     Use internal_wave_box_masks:
@@ -37,11 +37,11 @@ import xarray as xr
 PLUGIN_ROOT = Path(__file__).resolve().parents[1]
 
 DEFAULT_INPUT_MANIFEST = (
-    PLUGIN_ROOT / "pipeline" / "model_outputs" / "johnny_iw_mask_outputs.json"
+    PLUGIN_ROOT / "pipeline" / "model_outputs" / "iw_yolo_mask_outputs.json"
 )
 
 DEFAULT_OUTPUT_GEOJSON = (
-    PLUGIN_ROOT / "pipeline" / "model_outputs" / "johnny_iw_detections.geojson"
+    PLUGIN_ROOT / "pipeline" / "model_outputs" / "iw_yolo_detections.geojson"
 )
 
 MASK_VARIABLE_NAME = "internal_wave_bbox_mask"
@@ -52,7 +52,7 @@ def load_manifest(path: Path) -> list[dict]:
     """
     Read the step 02 manifest.
 
-    This file points to every mask.nc produced by Johnny's model.
+    This file points to every mask.nc produced by the internal-wave YOLO model.
     """
     if not path.exists():
         raise FileNotFoundError(f"Manifest not found: {path}")
@@ -299,7 +299,7 @@ def features_from_per_box_masks(
         box_record = get_box_record(record, zero_based_index)
 
         feature_id = (
-            f"johnny_iw_cycle_{record.get('cycle')}"
+            f"iw_yolo_cycle_{record.get('cycle')}"
             f"_pass_{record.get('pass')}"
             f"_box_{box_index:03d}"
         )
@@ -310,10 +310,10 @@ def features_from_per_box_masks(
                 "id": feature_id,
 
                 # Friendly name for frontend popup.
-                "model": "Johnny Internal Wave Detector",
+                "model": "Bay of Bengal Internal Wave Yolo Detector",
 
                 # Stable id for code/filtering.
-                "model_id": "johnny_iw",
+                "model_id": "iw_yolo",
 
                 "cycle": record.get("cycle"),
                 "pass": record.get("pass"),
@@ -392,7 +392,7 @@ def features_from_combined_mask_fallback(
         box_record = get_box_record(record, component_id - 1)
 
         feature_id = (
-            f"johnny_iw_cycle_{record.get('cycle')}"
+            f"iw_yolo_cycle_{record.get('cycle')}"
             f"_pass_{record.get('pass')}"
             f"_component_{component_id:03d}"
         )
@@ -401,8 +401,8 @@ def features_from_combined_mask_fallback(
             "type": "Feature",
             "properties": {
                 "id": feature_id,
-                "model": "Johnny Internal Wave Detector",
-                "model_id": "johnny_iw",
+                "model": "Bay of Bengal Internal Wave YOLO Detector",
+                "model_id": "iw_yolo",
                 "cycle": record.get("cycle"),
                 "pass": record.get("pass"),
                 "source_item_id": record.get("item_id"),
@@ -488,7 +488,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--input-manifest",
         default=str(DEFAULT_INPUT_MANIFEST),
-        help="Manifest from step_02_run_johnny_iw.py.",
+        help="Manifest from the internal-wave YOLO step 02 pipeline.",
     )
 
     parser.add_argument(
