@@ -3,11 +3,17 @@
     {
       "label": "Internal Wave Detections",
       "field": "detection_count"
+    },
+    {
+      "label": "Processing Time",
+      "field": "processing_seconds",
+      "unit": "s"
     }
   ],
+
   "feature_properties": [
     {
-      "label": "Detection",
+      "label": "Internal Wave ID",
       "field": "id"
     },
     {
@@ -15,9 +21,35 @@
       "field": "confidence_value"
     },
     {
-      "label": "Processing Time",
-      "field": "processing_seconds",
-      "unit": "s"
+      "label": "Class",
+      "field": "class_name"
+    },
+    {
+      "label": "Box Index",
+      "field": "box_index"
+    }
+  ],
+
+  "feature_table": [
+    {
+      "label": "Internal Wave ID",
+      "field": "id"
+    },
+    {
+      "label": "Confidence",
+      "field": "confidence_value"
+    },
+    {
+      "label": "Class",
+      "field": "class_name"
+    },
+    {
+      "label": "Box Index",
+      "field": "box_index"
+    },
+    {
+      "label": "Pixels",
+      "field": "pixel_count"
     }
   ]
 }
