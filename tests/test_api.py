@@ -58,14 +58,38 @@ def test_metadata():
 
     assert "summary" in data
     assert "feature_properties" in data
+    assert "feature_table" in data
 
     summary_fields = {row["field"] for row in data["summary"]}
     feature_fields = {row["field"] for row in data["feature_properties"]}
+    table_fields = {row["field"] for row in data["feature_table"]}
 
     assert "detection_count" in summary_fields
-    assert "id" in feature_fields
-    assert "confidence_value" in feature_fields
-    assert "processing_seconds" in feature_fields
+    assert "processing_seconds" in summary_fields
+    assert feature_fields == {"id", "confidence_value"}
+    assert table_fields == {"id", "confidence_value"}
+
+
+def test_output_schema():
+    response = client.get("/output-schema")
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["schema_version"] == 1
+    assert data["geodataset"]["geometry_type"] == "Polygon"
+
+    fields = {
+        row["field"]: row
+        for row in data["geodataset"]["properties"]
+    }
+
+    assert fields["id"]["type"] == "string"
+    assert fields["confidence_value"]["type"] == "number"
+    assert fields["class_name"]["type"] == "string"
+    assert fields["box_index"]["type"] == "integer"
+    assert fields["pixel_count"]["type"] == "integer"
 
 
 def test_predict_missing_granule(tmp_path, monkeypatch):
@@ -104,6 +128,10 @@ def test_predict_response_contract(tmp_path, monkeypatch):
                     "id": "iw_yolo_cycle_050_pass_230_box_001",
                     "model_id": "iw_yolo",
                     "confidence_value": 0.91,
+                    "class_id": 0,
+                    "class_name": "internal_wave",
+                    "box_index": 1,
+                    "pixel_count": 100,
                     "mask_netcdf": record["mask_netcdf"],
                 },
                 "geometry": {

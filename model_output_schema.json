@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+
+  "geodataset": {
+    "geometry_type": "Polygon",
+
+    "properties": [
+      {
+        "field": "id",
+        "label": "Internal Wave ID",
+        "type": "string"
+      },
+      {
+        "field": "confidence_value",
+        "label": "Confidence",
+        "type": "number"
+      },
+      {
+        "field": "class_id",
+        "label": "Class ID",
+        "type": "integer"
+      },
+      {
+        "field": "class_name",
+        "label": "Class",
+        "type": "string"
+      },
+      {
+        "field": "box_index",
+        "label": "Box Index",
+        "type": "integer"
+      },
+      {
+        "field": "pixel_count",
+        "label": "Pixel Count",
+        "type": "integer"
+      },
+      {
+        "field": "bbox_west",
+        "label": "Bounding Box West",
+        "type": "number",
+        "unit": "degrees"
+      },
+      {
+        "field": "bbox_south",
+        "label": "Bounding Box South",
+        "type": "number",
+        "unit": "degrees"
+      },
+      {
+        "field": "bbox_east",
+        "label": "Bounding Box East",
+        "type": "number",
+        "unit": "degrees"
+      },
+      {
+        "field": "bbox_north",
+        "label": "Bounding Box North",
+        "type": "number",
+        "unit": "degrees"
+      },
+      {
+        "field": "detection_threshold",
+        "label": "Detection Threshold",
+        "type": "number"
+      },
+      {
+        "field": "filter_type",
+        "label": "Filter Type",
+        "type": "string"
+      }
+    ]
+  }
+}

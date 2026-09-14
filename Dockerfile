@@ -50,6 +50,7 @@ COPY --chown=$MAMBA_USER:$MAMBA_USER \
     swot_internal_wave_detector.py \
     api.py \
     model_ui_for_mmgis.json \
+    model_output_schema.json \
     last.pt \
     /app/
 

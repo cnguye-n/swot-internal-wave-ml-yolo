@@ -16,6 +16,7 @@ from pipeline.step_03_yolo_to_geojson import mask_netcdf_to_features
 BASE_DIR = Path(__file__).resolve().parent
 MODEL_PATH = BASE_DIR / "last.pt"
 UI_CONFIG_PATH = BASE_DIR / "model_ui_for_mmgis.json"
+MODEL_OUTPUT_SCHEMA_PATH = BASE_DIR / "model_output_schema.json"
 DATA_ROOT = Path(os.environ.get("SWOT_DATA_ROOT", "/data"))
 
 
@@ -90,6 +91,17 @@ def resolve_granule(request: PredictRequest) -> Path:
     )
 
 
+def load_json_config(path: Path, label: str):
+    """Read one model-owned MMGIS JSON contract."""
+    if not path.is_file():
+        raise HTTPException(status_code=500, detail=f"{label} not found: {path}")
+
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as error:
+        raise HTTPException(status_code=500, detail=f"{label} is invalid JSON: {error}") from error
+
+
 @app.get("/health")
 def health():
     return {
@@ -102,13 +114,14 @@ def health():
 
 @app.get("/metadata")
 def metadata():
-    if not UI_CONFIG_PATH.is_file():
-        raise HTTPException(
-            status_code=500,
-            detail=f"Model UI metadata not found: {UI_CONFIG_PATH}",
-        )
+    """Return model-specific display metadata used by MMGIS."""
+    return load_json_config(UI_CONFIG_PATH, "Model UI metadata")
 
-    return json.loads(UI_CONFIG_PATH.read_text(encoding="utf-8"))
+
+@app.get("/output-schema")
+def output_schema():
+    """Return the model-specific GeoDataset output contract used by MMGIS."""
+    return load_json_config(MODEL_OUTPUT_SCHEMA_PATH, "Model output schema")
 
 
 @app.post("/predict")

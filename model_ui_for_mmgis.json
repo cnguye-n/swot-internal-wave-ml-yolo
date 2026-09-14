@@ -3,21 +3,35 @@
     {
       "label": "Internal Wave Detections",
       "field": "detection_count"
-    }
-  ],
-  "feature_properties": [
-    {
-      "label": "Detection",
-      "field": "id"
-    },
-    {
-      "label": "Confidence",
-      "field": "confidence_value"
     },
     {
       "label": "Processing Time",
       "field": "processing_seconds",
       "unit": "s"
+    }
+  ],
+
+  "feature_properties": [
+    {
+      "label": "Internal Wave ID",
+      "field": "id"
+    },
+    {
+      "label": "Confidence",
+      "field": "confidence_value",
+      "decimals": 3
+    }
+  ],
+
+  "feature_table": [
+    {
+      "label": "Internal Wave ID",
+      "field": "id"
+    },
+    {
+      "label": "Confidence",
+      "field": "confidence_value",
+      "decimals": 3
     }
   ]
 }
