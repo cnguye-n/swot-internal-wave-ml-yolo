@@ -18,7 +18,8 @@
     },
     {
       "label": "Confidence",
-      "field": "confidence_value"
+      "field": "confidence_value",
+      "decimals": 3
     }
   ],
 
@@ -29,7 +30,8 @@
     },
     {
       "label": "Confidence",
-      "field": "confidence_value"
+      "field": "confidence_value",
+      "decimals": 3
     }
   ]
 }
