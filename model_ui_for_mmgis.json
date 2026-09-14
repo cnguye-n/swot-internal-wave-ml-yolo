@@ -19,14 +19,6 @@
     {
       "label": "Confidence",
       "field": "confidence_value"
-    },
-    {
-      "label": "Class",
-      "field": "class_name"
-    },
-    {
-      "label": "Box Index",
-      "field": "box_index"
     }
   ],
 
