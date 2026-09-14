@@ -66,12 +66,8 @@ def test_metadata():
 
     assert "detection_count" in summary_fields
     assert "processing_seconds" in summary_fields
-    assert "id" in feature_fields
-    assert "confidence_value" in feature_fields
-    assert "class_name" in feature_fields
-    assert "id" in table_fields
-    assert "confidence_value" in table_fields
-    assert "pixel_count" in table_fields
+    assert feature_fields == {"id", "confidence_value"}
+    assert table_fields == {"id", "confidence_value"}
 
 
 def test_output_schema():
